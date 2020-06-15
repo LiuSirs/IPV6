@@ -1,0 +1,90 @@
+package test.allen;
+
+import com.google.common.collect.ImmutableList;
+import com.googlecode.ipv6.IPv6Network;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
+
+/**
+ * other: Allen
+ * date: 2020-06-14
+ * 补全ipv6-工具类
+ */
+public class ipv6 {
+
+    public static void main(String[] args) {
+//        System.out.println("result:"+parseAbbreviationToFullIPv6("2409:8015:880::/43"));
+//        System.out.println(parseAbbreviationToFullIPv6("::1"));
+//        System.out.println(parseAbbreviationToFullIPv6("11::1111:1"));
+//        System.out.println(parseAbbreviationToFullIPv6("11::1111:1111"));
+//        System.out.println(parseAbbreviationToFullIPv6("2101:db6::"));
+//        System.out.println(parseAbbreviationToFullIPv6("CDCD:910A:2222:5498:8475:1111:3900:2022"));
+//        System.out.println(parseAbbreviationToFullIPv6("2000:0:0:0:0:0:0:1"));
+//        System.out.println(parseAbbreviationToFullIPv6("1030::C9B4:FF12:48AA:1A2B"));
+        System.out.println(parseAbbreviationToFullIPv6("2222::192.168.1.1"));
+    }
+
+    public static String parseAbbreviationToFullIPv6(String abbreviation) {
+        String fullIPv6 = "";
+        if ("::".equals(abbreviation)) {
+            return "0000:0000:0000:0000:0000:0000:0000:0000";
+        }else if(abbreviation.contains("::") && abbreviation.contains(".")){
+            abbreviation = compositeTonormalIp(abbreviation);
+        }
+        String[] arr = new String[]{"0000", "0000", "0000", "0000", "0000", "0000", "0000", "0000"};
+        if (abbreviation.startsWith("::")) {
+            String[] temp = abbreviation.substring(2, abbreviation.length()).split(":");
+            for (int i = 0; i < temp.length; i++) {
+                String tempStr = "0000" + temp[i];
+                arr[i + 8 - temp.length] = tempStr.substring(tempStr.length() - 4);
+            }
+        } else if (abbreviation.endsWith("::")) {
+            String[] temp = abbreviation.substring(0, abbreviation.length() - 2).split(":");
+            for (int i = 0; i < temp.length; i++) {
+                String tempStr = "0000" + temp[i];
+                arr[i] = tempStr.substring(tempStr.length() - 4);
+            }
+        } else if (abbreviation.contains("::")) {
+            String[] tempArr = abbreviation.split("::");
+
+            String[] temp0 = tempArr[0].split(":");
+            for (int i = 0; i < temp0.length; i++) {
+                String tempStr = "0000" + temp0[i];
+                arr[i] = tempStr.substring(tempStr.length() - 4);
+            }
+
+            String[] temp1 = tempArr[1].split(":");
+            for (int i = 0; i < temp1.length; i++) {
+                String tempStr = "0000" + temp1[i];
+                arr[i + 8 - temp1.length] = tempStr.substring(tempStr.length() - 4);
+            }
+        } else {
+            String[] tempArr = abbreviation.split(":");
+            for (int i = 0; i < tempArr.length; i++) {
+                String tempStr = "0000" + tempArr[i];
+                arr[i] = tempStr.substring(tempStr.length() - 4);
+            }
+        }
+        fullIPv6 = StringUtils.join(arr, ":");
+        return fullIPv6;
+    }
+
+    /**
+     *
+     * @param ip
+     * @return
+     */
+    public static String compositeTonormalIp(String ip){
+        String convertIp= null;
+        if(ip.contains("/")){
+            String convertIps[] = ip.split("/");
+            List<IPv6Network> ipv6NetworkList = ImmutableList.of(IPv6Network.fromString(ip));
+            convertIp=ipv6NetworkList.get(0).getFirst().toString()+"/"+convertIps[1];
+        }else{
+            List<IPv6Network> ipv6NetworkList = ImmutableList.of(IPv6Network.fromString(ip+"/128"));
+            convertIp=ipv6NetworkList.get(0).getFirst().toString();
+        }
+        return convertIp;
+    }
+}
